@@ -30,3 +30,9 @@ id = "9qJPbH1hfINuJkDBRcWjd"
 uri = "file://artifacts/mockup-sandbox/public/images/recipe-salad.png"
 type = "image"
 title = "Fresh summer salad"
+
+[[generated]]
+id = "ghqWDROelggsqN6OuD3Vr"
+uri = "file://artifacts/fridgechef/assets/images/icon.png"
+type = "image"
+title = "fridgechef app icon"

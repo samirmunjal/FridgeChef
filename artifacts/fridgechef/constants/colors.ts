@@ -1,59 +1,57 @@
 /**
- * Semantic design tokens for the mobile app.
+ * Semantic design tokens for FridgeChef.
  *
- * These tokens mirror the naming conventions used in web artifacts (index.css)
- * so that multi-artifact projects share a cohesive visual identity.
- *
- * Replace the placeholder values below with values that match the project's
- * brand. If a sibling web artifact exists, read its index.css and convert the
- * HSL values to hex so both artifacts use the same palette.
- *
- * To add dark mode, add a `dark` key with the same token names.
- * The useColors() hook will automatically pick it up.
+ * Warm, appetizing palette inspired by the approved mockups: cream
+ * background, orange primary accent, stone neutrals.
  */
 
 const colors = {
   light: {
     // Legacy aliases (kept for backward compatibility)
-    text: "#0a0a0a",
-    tint: "#2f95dc",
+    text: "#292524",
+    tint: "#EA580C",
 
     // Core surfaces
-    background: "#ffffff",
-    foreground: "#0a0a0a",
+    background: "#FFFBF5",
+    foreground: "#292524",
 
     // Cards / elevated surfaces
-    card: "#f9f9f9",
-    cardForeground: "#0a0a0a",
+    card: "#FFFFFF",
+    cardForeground: "#292524",
 
     // Primary action color (buttons, links, active states)
-    primary: "#2f95dc",
-    primaryForeground: "#ffffff",
+    primary: "#EA580C",
+    primaryForeground: "#FFFFFF",
 
-    // Secondary / less-emphasis interactive surfaces
-    secondary: "#f0f0f0",
-    secondaryForeground: "#1a1a1a",
+    // Secondary / less-emphasis interactive surfaces (dark chip style)
+    secondary: "#292524",
+    secondaryForeground: "#FFFFFF",
 
     // Muted / subdued elements (dividers, timestamps, placeholders)
-    muted: "#f0f0f0",
-    mutedForeground: "#737373",
+    muted: "#F5F5F4",
+    mutedForeground: "#78716C",
 
     // Accent highlights (badges, selected items, focus rings)
-    accent: "#f0f0f0",
-    accentForeground: "#1a1a1a",
+    accent: "#FFEDD5",
+    accentForeground: "#7C2D12",
 
     // Destructive actions (delete, error states)
-    destructive: "#ef4444",
-    destructiveForeground: "#ffffff",
+    destructive: "#EF4444",
+    destructiveForeground: "#FFFFFF",
 
     // Borders and input outlines
-    border: "#e5e5e5",
-    input: "#e5e5e5",
+    border: "#E7E5E4",
+    input: "#E7E5E4",
+
+    // Status colors
+    success: "#22C55E",
+    successForeground: "#FFFFFF",
+    warning: "#F59E0B",
+    warningForeground: "#FFFFFF",
   },
 
-  // Border radius (in px). Sync from the sibling web artifact's --radius
-  // CSS variable. This value applies to cards, buttons, inputs, and modals.
-  radius: 8,
+  // Border radius (in px) applied to cards, buttons, inputs, and modals.
+  radius: 20,
 };
 
 export default colors;

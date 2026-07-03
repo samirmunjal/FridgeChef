@@ -10,7 +10,45 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: recipes
+    description: Ingredient detection and recipe matching
 paths:
+  /recipes/detect-ingredients:
+    post:
+      operationId: detectIngredients
+      tags: [recipes]
+      summary: Detect ingredients from a fridge/pantry photo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IngredientDetectionInput"
+      responses:
+        "200":
+          description: Detected ingredients
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngredientDetectionResult"
+  /recipes/suggest:
+    post:
+      operationId: suggestRecipes
+      tags: [recipes]
+      summary: Suggest recipes matching ingredients and preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecipeSuggestionInput"
+      responses:
+        "200":
+          description: Suggested recipes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecipeSuggestionResult"
   /healthz:
     get:
       operationId: healthCheck
@@ -33,4 +71,79 @@ components:
           type: string
       required:
         - status
+    IngredientDetectionInput:
+      type: object
+      required:
+        - imageBase64
+      properties:
+        imageBase64:
+          type: string
+          description: Base64-encoded JPEG/PNG image data (no data URL prefix)
+    IngredientDetectionResult:
+      type: object
+      required:
+        - ingredients
+      properties:
+        ingredients:
+          type: array
+          items:
+            type: string
+    RecipeSuggestionInput:
+      type: object
+      required:
+        - ingredients
+        - cuisines
+        - diets
+      properties:
+        ingredients:
+          type: array
+          items:
+            type: string
+        cuisines:
+          type: array
+          items:
+            type: string
+        diets:
+          type: array
+          items:
+            type: string
+    Recipe:
+      type: object
+      required:
+        - id
+        - title
+        - time
+        - difficulty
+        - matchPercent
+        - missingIngredients
+        - cuisine
+        - description
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        time:
+          type: string
+        difficulty:
+          type: string
+        matchPercent:
+          type: integer
+        missingIngredients:
+          type: array
+          items:
+            type: string
+        cuisine:
+          type: string
+        description:
+          type: string
+    RecipeSuggestionResult:
+      type: object
+      required:
+        - recipes
+      properties:
+        recipes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Recipe"
 
