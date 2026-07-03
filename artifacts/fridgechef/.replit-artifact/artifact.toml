@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "FridgeChef"
+version = "1.0.0"
+id = "artifacts/fridgechef"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 23940
+
+[services.development]
+run = "pnpm --filter @workspace/fridgechef run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/fridgechef", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/fridgechef", "run", "serve" ]
+
+[services.env]
+PORT = "23940"
+BASE_PATH = "/"
