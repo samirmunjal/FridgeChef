@@ -1,0 +1,32 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "11I2mjVigK-rO7YkC34Wn"
+uri = "file://artifacts/mockup-sandbox/public/images/fridge-inside.png"
+type = "image"
+title = "Inside a fridge ingredients"
+
+[[generated]]
+id = "I-rDFRdd2XgzQi0NVcI_z"
+uri = "file://artifacts/mockup-sandbox/public/images/recipe-pasta.png"
+type = "image"
+title = "Rustic pasta dish"
+
+[[generated]]
+id = "yKKA35QyvDU8vyVYvDI7M"
+uri = "file://artifacts/mockup-sandbox/public/images/recipe-tacos.png"
+type = "image"
+title = "Vibrant tacos"
+
+[[generated]]
+id = "ZrSc4UmAVSDruzg270A2x"
+uri = "file://artifacts/mockup-sandbox/public/images/recipe-curry.png"
+type = "image"
+title = "Cozy vegetable curry"
+
+[[generated]]
+id = "9qJPbH1hfINuJkDBRcWjd"
+uri = "file://artifacts/mockup-sandbox/public/images/recipe-salad.png"
+type = "image"
+title = "Fresh summer salad"
