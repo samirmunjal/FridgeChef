@@ -12,6 +12,8 @@ export interface HealthStatus {
 export interface IngredientDetectionInput {
   /** Base64-encoded JPEG/PNG image data (no data URL prefix) */
   imageBase64: string;
+  /** Optional user-provided Gemini API key. If omitted, the server uses its own key. */
+  apiKey?: string;
 }
 
 export interface IngredientDetectionResult {
@@ -22,6 +24,8 @@ export interface RecipeSuggestionInput {
   ingredients: string[];
   cuisines: string[];
   diets: string[];
+  /** Optional user-provided Gemini API key. If omitted, the server uses its own key. */
+  apiKey?: string;
 }
 
 export interface Recipe {

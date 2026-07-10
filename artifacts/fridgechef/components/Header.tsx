@@ -30,8 +30,7 @@ export function Header({
       ]}
     >
       <Pressable
-        onPress={() => (showBack ? router.back() : undefined)}
-        disabled={!showBack}
+        onPress={() => (showBack ? router.back() : router.push("/settings"))}
         hitSlop={8}
         style={({ pressed }) => [
           styles.iconButton,
@@ -40,7 +39,7 @@ export function Header({
         testID="header-back-button"
       >
         <Feather
-          name={showBack ? "chevron-left" : "menu"}
+          name={showBack ? "chevron-left" : "settings"}
           size={20}
           color={colors.accentForeground}
         />

@@ -6,7 +6,18 @@ import {
   type Recipe,
   type RecipeSuggestionResult,
 } from "@workspace/api-zod";
-import { genAI } from "../lib/gemini";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const DEFAULT_KEY = process.env["GEMINI_API_KEY"];
+if (!DEFAULT_KEY) {
+  console.warn("GEMINI_API_KEY not set — server will require users to provide their own API key");
+}
+
+function getGenAI(apiKey?: string) {
+  const key = apiKey || DEFAULT_KEY;
+  if (!key) throw new Error("No API key available");
+  return new GoogleGenerativeAI(key);
+}
 
 const router: IRouter = Router();
 
@@ -18,7 +29,7 @@ router.post("/recipes/detect-ingredients", async (req, res): Promise<void> => {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+    const model = getGenAI(parsed.data.apiKey).getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
     const result = await model.generateContent([
       {
@@ -48,6 +59,15 @@ router.post("/recipes/detect-ingredients", async (req, res): Promise<void> => {
     res.json(response);
   } catch (err) {
     req.log.error({ err }, "Failed to detect ingredients");
+    const msg = (err as { message?: string }).message || "";
+    if (msg.includes("quota") || msg.includes("429")) {
+      res.status(429).json({ error: "Your API key quota was exceeded. Please wait a moment or use a different key." });
+      return;
+    }
+    if (msg.includes("API key not valid")) {
+      res.status(401).json({ error: "Invalid API key. Please check your key in Settings." });
+      return;
+    }
     res.status(502).json({ error: "Failed to analyze the photo. Please try again." });
   }
 });
@@ -59,10 +79,10 @@ router.post("/recipes/suggest", async (req, res): Promise<void> => {
     return;
   }
 
-  const { ingredients, cuisines, diets } = parsed.data;
+  const { ingredients, cuisines, diets, apiKey } = parsed.data;
 
   try {
-    const model = genAI.getGenerativeModel({
+    const model = getGenAI(apiKey).getGenerativeModel({
       model: "gemini-2.5-flash-lite",
       generationConfig: { responseMimeType: "application/json" },
     });
@@ -87,6 +107,15 @@ Dietary restrictions: ${diets.join(", ") || "none"}.`;
     res.json(response);
   } catch (err) {
     req.log.error({ err }, "Failed to suggest recipes");
+    const msg = (err as { message?: string }).message || "";
+    if (msg.includes("quota") || msg.includes("429")) {
+      res.status(429).json({ error: "Your API key quota was exceeded. Please wait a moment or use a different key." });
+      return;
+    }
+    if (msg.includes("API key not valid")) {
+      res.status(401).json({ error: "Invalid API key. Please check your key in Settings." });
+      return;
+    }
     res.status(502).json({ error: "Failed to generate recipes. Please try again." });
   }
 });

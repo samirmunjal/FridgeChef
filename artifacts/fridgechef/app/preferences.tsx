@@ -9,6 +9,7 @@ import { Header } from "@/components/Header";
 import { Pill } from "@/components/Pill";
 import { useColors } from "@/hooks/useColors";
 import { useRecipeFlow } from "@/context/RecipeFlowContext";
+import { useApiKey } from "@/context/ApiKeyContext";
 
 const CUISINES = ["Italian", "Mexican", "Asian", "Mediterranean", "American", "Indian", "Middle Eastern", "Any"];
 const DIETS = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Low-Carb", "Keto", "Paleo"];
@@ -16,6 +17,7 @@ const DIETS = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Low-Carb", "
 export default function PreferencesScreen() {
   const colors = useColors();
   const flow = useRecipeFlow();
+  const { apiKey } = useApiKey();
   const suggestRecipes = useSuggestRecipes();
 
   const handleFindRecipes = async () => {
@@ -25,12 +27,23 @@ export default function PreferencesScreen() {
           ingredients: flow.ingredients,
           cuisines: flow.cuisines,
           diets: flow.diets,
+          apiKey: apiKey ?? undefined,
         },
       });
       flow.setRecipes(data.recipes);
       router.push("/results");
-    } catch {
-      Alert.alert("Something went wrong", "We couldn't generate recipes. Please try again.");
+    } catch (e: unknown) {
+      const msg =
+        typeof e === "object" && e !== null && "response" in e && (e as { response?: { data?: { error?: string } } }).response?.data?.error
+          ? (e as { response?: { data?: { error?: string } } }).response!.data!.error!
+          : "We couldn't generate recipes. Please try again.";
+      if (msg.includes("quota")) {
+        Alert.alert("Quota exceeded", "Your API key ran out of daily quota. You can wait until it resets or add a different key in Settings.");
+      } else if (msg.includes("Invalid API key")) {
+        Alert.alert("Invalid API key", msg);
+      } else {
+        Alert.alert("Something went wrong", msg);
+      }
     }
   };
 

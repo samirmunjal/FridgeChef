@@ -15,6 +15,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ApiKeyProvider } from "@/context/ApiKeyContext";
 import { FavoritesProvider } from "@/context/FavoritesContext";
 import { RecipeFlowProvider } from "@/context/RecipeFlowContext";
 import { ShoppingListProvider } from "@/context/ShoppingListContext";
@@ -34,6 +35,7 @@ function RootLayoutNav() {
       <Stack.Screen name="results" />
       <Stack.Screen name="favorites" />
       <Stack.Screen name="shopping-list" />
+      <Stack.Screen name="settings" />
     </Stack>
   );
 }
@@ -60,13 +62,15 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView>
             <KeyboardProvider>
-              <FavoritesProvider>
-                <ShoppingListProvider>
-                  <RecipeFlowProvider>
-                    <RootLayoutNav />
-                  </RecipeFlowProvider>
-                </ShoppingListProvider>
-              </FavoritesProvider>
+              <ApiKeyProvider>
+                <FavoritesProvider>
+                  <ShoppingListProvider>
+                    <RecipeFlowProvider>
+                      <RootLayoutNav />
+                    </RecipeFlowProvider>
+                  </ShoppingListProvider>
+                </FavoritesProvider>
+              </ApiKeyProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>

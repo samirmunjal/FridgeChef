@@ -10,4 +10,6 @@ export interface RecipeSuggestionInput {
   ingredients: string[];
   cuisines: string[];
   diets: string[];
+  /** Optional user-provided Gemini API key. If omitted, the server uses its own key. */
+  apiKey?: string;
 }

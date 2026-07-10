@@ -20,10 +20,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { FavoritesHeaderButton, Header } from "@/components/Header";
 import { useColors } from "@/hooks/useColors";
 import { useRecipeFlow } from "@/context/RecipeFlowContext";
+import { useApiKey } from "@/context/ApiKeyContext";
 
 export default function CaptureScreen() {
   const colors = useColors();
   const flow = useRecipeFlow();
+  const { apiKey } = useApiKey();
   const [scanned, setScanned] = useState(flow.ingredients.length > 0);
   const [newIngredient, setNewIngredient] = useState("");
   const detectIngredients = useDetectIngredients();
@@ -67,14 +69,24 @@ export default function CaptureScreen() {
       }
 
       const data = await detectIngredients.mutateAsync({
-        data: { imageBase64: asset.base64 },
+        data: { imageBase64: asset.base64, apiKey: apiKey ?? undefined },
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       flow.setIngredients(data.ingredients);
       setScanned(true);
-    } catch {
-      Alert.alert("Scan failed", "We couldn't analyze that photo. Please try again.");
+    } catch (e: unknown) {
+      const msg =
+        typeof e === "object" && e !== null && "response" in e && (e as { response?: { data?: { error?: string } } }).response?.data?.error
+          ? (e as { response?: { data?: { error?: string } } }).response!.data!.error!
+          : "We couldn't analyze that photo. Please try again.";
+      if (msg.includes("quota")) {
+        Alert.alert("Quota exceeded", "Your API key ran out of daily quota. You can wait until it resets or add a different key in Settings.");
+      } else if (msg.includes("Invalid API key")) {
+        Alert.alert("Invalid API key", msg);
+      } else {
+        Alert.alert("Scan failed", msg);
+      }
     }
   };
 

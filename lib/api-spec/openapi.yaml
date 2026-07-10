@@ -79,6 +79,9 @@ components:
         imageBase64:
           type: string
           description: Base64-encoded JPEG/PNG image data (no data URL prefix)
+        apiKey:
+          type: string
+          description: Optional user-provided Gemini API key. If omitted, the server uses its own key.
     IngredientDetectionResult:
       type: object
       required:
@@ -107,6 +110,9 @@ components:
           type: array
           items:
             type: string
+        apiKey:
+          type: string
+          description: Optional user-provided Gemini API key. If omitted, the server uses its own key.
     Recipe:
       type: object
       required:
