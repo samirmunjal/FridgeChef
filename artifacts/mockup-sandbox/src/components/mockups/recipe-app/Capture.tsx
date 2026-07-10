@@ -60,6 +60,9 @@ export function Capture() {
               <Camera className="mr-2 h-5 w-5" />
               {loading ? "Analyzing..." : "Scan Ingredients"}
             </Button>
+            <button className="text-stone-500 text-sm font-medium mt-4 hover:text-stone-700 transition-colors">
+              Choose a photo instead
+            </button>
           </div>
         ) : (
           <div className="flex-1 flex flex-col p-6 animate-in slide-in-from-bottom-4 fade-in duration-500">
