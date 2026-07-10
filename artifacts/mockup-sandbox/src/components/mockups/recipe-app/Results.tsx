@@ -117,9 +117,17 @@ export function Results() {
                     <div className="flex flex-wrap gap-2 mb-4">
                       <span className="text-xs text-stone-400 my-auto">Need:</span>
                       {recipe.missingTags.map(tag => (
-                        <span key={tag} className="px-2 py-1 bg-stone-100 text-stone-600 text-xs rounded-md">
+                        <a
+                          key={tag}
+                          href={`https://www.amazon.com/s?k=${encodeURIComponent(tag)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-stone-100 hover:bg-orange-100 text-stone-600 hover:text-orange-700 text-xs rounded-md transition-colors"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
                           {tag}
-                        </span>
+                        </a>
                       ))}
                     </div>
                   )}

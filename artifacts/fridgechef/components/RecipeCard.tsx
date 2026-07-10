@@ -2,7 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
-import { LayoutAnimation, Platform, Pressable, StyleSheet, Text, UIManager, View } from "react-native";
+import { LayoutAnimation, Linking, Platform, Pressable, StyleSheet, Text, UIManager, View } from "react-native";
 import type { Recipe } from "@workspace/api-client-react";
 
 import { useColors } from "@/hooks/useColors";
@@ -121,9 +121,18 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
           <View style={styles.missingRow}>
             <Text style={[styles.missingLabel, { color: colors.mutedForeground }]}>Need:</Text>
             {recipe.missingIngredients.map((tag: string) => (
-              <View key={tag} style={[styles.missingTag, { backgroundColor: colors.muted }]}>
+              <Pressable
+                key={tag}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  void Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(tag)}`);
+                }}
+                hitSlop={4}
+                style={[styles.missingTag, { backgroundColor: colors.muted }]}
+              >
+                <Feather name="external-link" size={10} color={colors.primary} style={{ marginRight: 4 }} />
                 <Text style={[styles.missingTagText, { color: colors.foreground }]}>{tag}</Text>
-              </View>
+              </Pressable>
             ))}
           </View>
         )}
@@ -243,6 +252,8 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
   },
   missingTag: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,

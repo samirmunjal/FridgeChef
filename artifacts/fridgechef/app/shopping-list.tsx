@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import React, { useMemo } from "react";
 import {
   Alert,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -160,6 +161,13 @@ export default function ShoppingListScreen() {
                       For: {recipes.join(", ")}
                     </Text>
                   </View>
+                  <Pressable
+                    onPress={() => void Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(label)}`)}
+                    hitSlop={8}
+                    style={styles.shopButton}
+                  >
+                    <Feather name="shopping-bag" size={16} color={colors.primary} />
+                  </Pressable>
                 </Pressable>
               );
             })}
@@ -256,6 +264,14 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   rowContent: { flex: 1 },
+  shopButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFF7ED",
+  },
   itemLabel: {
     fontSize: 16,
     fontFamily: "Inter_500Medium",
