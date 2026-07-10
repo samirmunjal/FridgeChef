@@ -8,15 +8,9 @@ import {
 } from "@workspace/api-zod";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const DEFAULT_KEY = process.env["GEMINI_API_KEY"];
-if (!DEFAULT_KEY) {
-  console.warn("GEMINI_API_KEY not set — server will require users to provide their own API key");
-}
-
 function getGenAI(apiKey?: string) {
-  const key = apiKey || DEFAULT_KEY;
-  if (!key) throw new Error("No API key available");
-  return new GoogleGenerativeAI(key);
+  if (!apiKey) throw new Error("No API key available");
+  return new GoogleGenerativeAI(apiKey);
 }
 
 const router: IRouter = Router();

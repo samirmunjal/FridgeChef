@@ -5,7 +5,6 @@ import React from "react";
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ApiKeyBanner } from "@/components/ApiKeyBanner";
 import { Header } from "@/components/Header";
 import { Pill } from "@/components/Pill";
 import { useColors } from "@/hooks/useColors";
@@ -18,7 +17,7 @@ const DIETS = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Low-Carb", "
 export default function PreferencesScreen() {
   const colors = useColors();
   const flow = useRecipeFlow();
-  const { apiKey, hasKey } = useApiKey();
+  const { apiKey } = useApiKey();
   const suggestRecipes = useSuggestRecipes();
 
   const handleFindRecipes = async () => {
@@ -69,7 +68,6 @@ export default function PreferencesScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        {!hasKey && <ApiKeyBanner />}
         <Text style={[styles.heading, { color: colors.foreground }]}>What are you craving?</Text>
         <Text style={[styles.subheading, { color: colors.mutedForeground }]}>
           Filter recipes by cuisine and dietary needs.

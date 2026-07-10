@@ -18,7 +18,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ApiKeyBanner } from "@/components/ApiKeyBanner";
 import { FavoritesHeaderButton, Header } from "@/components/Header";
 import { useColors } from "@/hooks/useColors";
 import { useRecipeFlow } from "@/context/RecipeFlowContext";
@@ -33,6 +32,18 @@ export default function CaptureScreen() {
   const detectIngredients = useDetectIngredients();
 
   const handleScan = async (fromCamera: boolean) => {
+    if (!hasKey) {
+      Alert.alert(
+        "API key needed",
+        "Add your free Google AI key in Settings to scan ingredients.",
+        [
+          { text: "Go to Settings", onPress: () => router.push("/settings") },
+          { text: "Cancel", style: "cancel" },
+        ],
+      );
+      return;
+    }
+
     try {
       const permission = fromCamera
         ? await ImagePicker.requestCameraPermissionsAsync()
@@ -128,7 +139,6 @@ export default function CaptureScreen() {
 
       {!scanned ? (
         <View style={styles.captureContainer}>
-          {!hasKey && <ApiKeyBanner />}
           <View style={styles.heroText}>
             <Text style={[styles.heading, { color: colors.foreground }]}>
               What&apos;s in the kitchen?
