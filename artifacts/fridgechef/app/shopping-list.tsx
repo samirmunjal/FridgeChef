@@ -162,7 +162,7 @@ export default function ShoppingListScreen() {
                     </Text>
                   </View>
                   <Pressable
-                    onPress={() => void Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(label)}`)}
+                    onPress={() => void Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(label)}&tag=samirmunjal-20`)}
                     hitSlop={8}
                     style={styles.shopButton}
                   >

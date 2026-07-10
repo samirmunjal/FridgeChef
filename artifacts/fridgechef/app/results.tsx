@@ -49,6 +49,9 @@ export default function ResultsScreen() {
             ))}
           </View>
         )}
+        <Text style={[styles.disclosure, { color: colors.mutedForeground }]}>
+          Some links are affiliate links. We may earn a small commission at no extra cost to you.
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -94,5 +97,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
+  },
+  disclosure: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    textAlign: "center",
+    marginTop: 20,
+    opacity: 0.7,
   },
 });

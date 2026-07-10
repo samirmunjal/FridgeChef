@@ -125,7 +125,7 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
                 key={tag}
                 onPress={(e) => {
                   e.stopPropagation();
-                  void Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(tag)}`);
+                  void Linking.openURL(`https://www.amazon.com/s?k=${encodeURIComponent(tag)}&tag=samirmunjal-20`);
                 }}
                 hitSlop={4}
                 style={[styles.missingTag, { backgroundColor: colors.muted }]}
