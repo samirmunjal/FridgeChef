@@ -154,17 +154,15 @@ export default function CaptureScreen() {
             </Text>
           </Pressable>
 
-          {Platform.OS === "web" && (
-            <Pressable
-              onPress={() => handleScan(false)}
-              disabled={detectIngredients.isPending}
-              style={styles.secondaryLink}
-            >
-              <Text style={[styles.secondaryLinkText, { color: colors.mutedForeground }]}>
-                Choose a photo instead
-              </Text>
-            </Pressable>
-          )}
+          <Pressable
+            onPress={() => handleScan(false)}
+            disabled={detectIngredients.isPending}
+            style={styles.secondaryLink}
+          >
+            <Text style={[styles.secondaryLinkText, { color: colors.mutedForeground }]}>
+              Choose a photo instead
+            </Text>
+          </Pressable>
         </View>
       ) : (
         <View style={styles.resultsContainer}>
