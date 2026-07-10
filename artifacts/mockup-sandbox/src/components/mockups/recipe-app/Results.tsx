@@ -119,7 +119,7 @@ export function Results() {
                       {recipe.missingTags.map(tag => (
                         <a
                           key={tag}
-                          href={`https://www.amazon.com/s?k=${encodeURIComponent(tag)}`}
+                          href={`https://www.amazon.com/s?k=${encodeURIComponent(tag)}&tag=samirmunjal-20`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={e => e.stopPropagation()}
