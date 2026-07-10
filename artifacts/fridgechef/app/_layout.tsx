@@ -17,6 +17,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { FavoritesProvider } from "@/context/FavoritesContext";
 import { RecipeFlowProvider } from "@/context/RecipeFlowContext";
+import { ShoppingListProvider } from "@/context/ShoppingListContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -32,6 +33,7 @@ function RootLayoutNav() {
       <Stack.Screen name="preferences" />
       <Stack.Screen name="results" />
       <Stack.Screen name="favorites" />
+      <Stack.Screen name="shopping-list" />
     </Stack>
   );
 }
@@ -59,9 +61,11 @@ export default function RootLayout() {
           <GestureHandlerRootView>
             <KeyboardProvider>
               <FavoritesProvider>
-                <RecipeFlowProvider>
-                  <RootLayoutNav />
-                </RecipeFlowProvider>
+                <ShoppingListProvider>
+                  <RecipeFlowProvider>
+                    <RootLayoutNav />
+                  </RecipeFlowProvider>
+                </ShoppingListProvider>
               </FavoritesProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
