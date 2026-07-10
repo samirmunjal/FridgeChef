@@ -9,9 +9,11 @@ import { useColors } from "@/hooks/useColors";
 export function Header({
   title,
   showBack = false,
+  rightElement,
 }: {
   title: string;
   showBack?: boolean;
+  rightElement?: React.ReactNode;
 }) {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -43,8 +45,32 @@ export function Header({
           color={colors.accentForeground}
         />
       </Pressable>
+
       <Text style={[styles.title, { color: colors.foreground }]}>{title}</Text>
+
+      {rightElement ? (
+        <View style={styles.rightSlot}>{rightElement}</View>
+      ) : (
+        <View style={styles.iconButton} />
+      )}
     </View>
+  );
+}
+
+export function FavoritesHeaderButton() {
+  const colors = useColors();
+  return (
+    <Pressable
+      onPress={() => router.push("/favorites")}
+      hitSlop={8}
+      style={({ pressed }) => [
+        styles.iconButton,
+        { backgroundColor: colors.accent, opacity: pressed ? 0.7 : 1 },
+      ]}
+      testID="favorites-header-button"
+    >
+      <Feather name="bookmark" size={20} color={colors.accentForeground} />
+    </Pressable>
   );
 }
 
@@ -66,5 +92,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontFamily: "Inter_600SemiBold",
+    flex: 1,
+  },
+  rightSlot: {
+    alignItems: "flex-end",
   },
 });

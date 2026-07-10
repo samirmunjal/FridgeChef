@@ -1,10 +1,12 @@
 import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import * as Haptics from "expo-haptics";
 import React, { useState } from "react";
 import { LayoutAnimation, Platform, Pressable, StyleSheet, Text, UIManager, View } from "react-native";
 import type { Recipe } from "@workspace/api-client-react";
 
 import { useColors } from "@/hooks/useColors";
+import { useFavorites } from "@/context/FavoritesContext";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -12,13 +14,19 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 
 export function RecipeCard({ recipe, image }: { recipe: Recipe; image: number }) {
   const colors = useColors();
+  const { isFavorited, toggleFavorite } = useFavorites();
   const [expanded, setExpanded] = useState(false);
-  const [favorited, setFavorited] = useState(false);
+  const favorited = isFavorited(recipe.id);
   const perfectMatch = recipe.matchPercent >= 100;
 
   const toggleExpanded = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpanded((prev) => !prev);
+  };
+
+  const handleFavorite = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    toggleFavorite(recipe);
   };
 
   return (
@@ -38,17 +46,19 @@ export function RecipeCard({ recipe, image }: { recipe: Recipe; image: number })
         <Pressable
           onPress={(e) => {
             e.stopPropagation();
-            setFavorited((prev) => !prev);
+            handleFavorite();
           }}
           hitSlop={8}
           testID={`favorite-button-${recipe.id}`}
-          style={styles.favoriteButton}
+          style={[
+            styles.favoriteButton,
+            favorited && { backgroundColor: "#FFF0F0" },
+          ]}
         >
           <Feather
             name="heart"
             size={18}
             color={favorited ? colors.destructive : colors.mutedForeground}
-            style={favorited ? styles.favoriteFilled : undefined}
           />
         </Pressable>
         <View
@@ -129,9 +139,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.9)",
     alignItems: "center",
     justifyContent: "center",
-  },
-  favoriteFilled: {
-    opacity: 1,
   },
   matchBadge: {
     position: "absolute",

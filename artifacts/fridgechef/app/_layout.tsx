@@ -15,6 +15,7 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { FavoritesProvider } from "@/context/FavoritesContext";
 import { RecipeFlowProvider } from "@/context/RecipeFlowContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -30,6 +31,7 @@ function RootLayoutNav() {
       <Stack.Screen name="index" />
       <Stack.Screen name="preferences" />
       <Stack.Screen name="results" />
+      <Stack.Screen name="favorites" />
     </Stack>
   );
 }
@@ -56,9 +58,11 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GestureHandlerRootView>
             <KeyboardProvider>
-              <RecipeFlowProvider>
-                <RootLayoutNav />
-              </RecipeFlowProvider>
+              <FavoritesProvider>
+                <RecipeFlowProvider>
+                  <RootLayoutNav />
+                </RecipeFlowProvider>
+              </FavoritesProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
         </QueryClientProvider>

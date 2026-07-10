@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Header } from "@/components/Header";
+import { FavoritesHeaderButton, Header } from "@/components/Header";
 import { useColors } from "@/hooks/useColors";
 import { useRecipeFlow } from "@/context/RecipeFlowContext";
 
@@ -92,7 +92,7 @@ export default function CaptureScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={["bottom"]}>
-      <Header title="FridgeChef" />
+      <Header title="FridgeChef" rightElement={<FavoritesHeaderButton />} />
 
       {!scanned ? (
         <View style={styles.captureContainer}>
