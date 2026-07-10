@@ -28,7 +28,14 @@
         }
       ],
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "FridgeChef needs access to your photo library so you can pick photos of your fridge and pantry ingredients.",
+          "cameraPermission": "FridgeChef needs camera access so you can snap a photo of your fridge or pantry to find recipes."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

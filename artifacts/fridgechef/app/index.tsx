@@ -8,6 +8,7 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   Platform,
   Pressable,
   StyleSheet,
@@ -41,8 +42,12 @@ export default function CaptureScreen() {
         Alert.alert(
           "Permission needed",
           fromCamera
-            ? "Camera access is needed to scan your ingredients."
-            : "Photo library access is needed to pick a photo.",
+            ? "Camera access is needed to scan your ingredients. You can enable it in your device Settings."
+            : "Photo library access is needed to pick a photo. You can enable it in your device Settings.",
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Open Settings", onPress: () => void Linking.openSettings() },
+          ],
         );
         return;
       }
