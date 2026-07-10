@@ -48,7 +48,7 @@ export default function SettingsScreen() {
         <Pressable onPress={handleGetKey} style={styles.getKeyRow}>
           <Feather name="external-link" size={14} color={colors.primary} />
           <Text style={[styles.getKeyText, { color: colors.primary }]}>
-            Get a free Gemini API key
+            Add your Google AI API Key
           </Text>
         </Pressable>
 
