@@ -29,7 +29,7 @@ router.post("/recipes/detect-ingredients", async (req, res): Promise<void> => {
   }
 
   try {
-    const model = getGenAI(parsed.data.apiKey).getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = getGenAI(parsed.data.apiKey).getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const result = await model.generateContent([
       {
@@ -87,7 +87,7 @@ router.post("/recipes/suggest", async (req, res): Promise<void> => {
 
   try {
     const model = getGenAI(apiKey).getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       generationConfig: { responseMimeType: "application/json" },
     });
 
