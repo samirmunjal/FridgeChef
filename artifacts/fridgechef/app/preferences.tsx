@@ -5,6 +5,7 @@ import React from "react";
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ApiKeyBanner } from "@/components/ApiKeyBanner";
 import { Header } from "@/components/Header";
 import { Pill } from "@/components/Pill";
 import { useColors } from "@/hooks/useColors";
@@ -17,7 +18,7 @@ const DIETS = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Low-Carb", "
 export default function PreferencesScreen() {
   const colors = useColors();
   const flow = useRecipeFlow();
-  const { apiKey } = useApiKey();
+  const { apiKey, hasKey } = useApiKey();
   const suggestRecipes = useSuggestRecipes();
 
   const handleFindRecipes = async () => {
@@ -38,11 +39,25 @@ export default function PreferencesScreen() {
           ? (e as { response?: { data?: { error?: string } } }).response!.data!.error!
           : "We couldn't generate recipes. Please try again.";
       if (msg.includes("quota")) {
-        Alert.alert("Quota exceeded", "Your API key ran out of daily quota. You can wait until it resets or add a different key in Settings.");
-      } else if (msg.includes("Invalid API key")) {
-        Alert.alert("Invalid API key", msg);
+        Alert.alert(
+          "Daily quota used up",
+          "Your Google AI key hit its free daily limit. It resets every 24 hours, or you can add a different key.",
+          [
+            { text: "Go to Settings", onPress: () => router.push("/settings") },
+            { text: "OK", style: "cancel" },
+          ]
+        );
+      } else if (msg.includes("Invalid API key") || msg.includes("You need a Google AI API key")) {
+        Alert.alert(
+          "API key needed",
+          msg,
+          [
+            { text: "Go to Settings", onPress: () => router.push("/settings") },
+            { text: "Cancel", style: "cancel" },
+          ]
+        );
       } else {
-        Alert.alert("Something went wrong", msg);
+        Alert.alert("Something went wrong", msg, [{ text: "OK" }]);
       }
     }
   };
@@ -54,6 +69,7 @@ export default function PreferencesScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
+        {!hasKey && <ApiKeyBanner />}
         <Text style={[styles.heading, { color: colors.foreground }]}>What are you craving?</Text>
         <Text style={[styles.subheading, { color: colors.mutedForeground }]}>
           Filter recipes by cuisine and dietary needs.

@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ApiKeyBanner } from "@/components/ApiKeyBanner";
 import { FavoritesHeaderButton, Header } from "@/components/Header";
 import { useColors } from "@/hooks/useColors";
 import { useRecipeFlow } from "@/context/RecipeFlowContext";
@@ -25,7 +26,7 @@ import { useApiKey } from "@/context/ApiKeyContext";
 export default function CaptureScreen() {
   const colors = useColors();
   const flow = useRecipeFlow();
-  const { apiKey } = useApiKey();
+  const { apiKey, hasKey } = useApiKey();
   const [scanned, setScanned] = useState(flow.ingredients.length > 0);
   const [newIngredient, setNewIngredient] = useState("");
   const detectIngredients = useDetectIngredients();
@@ -81,11 +82,25 @@ export default function CaptureScreen() {
           ? (e as { response?: { data?: { error?: string } } }).response!.data!.error!
           : "We couldn't analyze that photo. Please try again.";
       if (msg.includes("quota")) {
-        Alert.alert("Quota exceeded", "Your API key ran out of daily quota. You can wait until it resets or add a different key in Settings.");
-      } else if (msg.includes("Invalid API key")) {
-        Alert.alert("Invalid API key", msg);
+        Alert.alert(
+          "Daily quota used up",
+          "Your Google AI key hit its free daily limit. It resets every 24 hours, or you can add a different key.",
+          [
+            { text: "Go to Settings", onPress: () => router.push("/settings") },
+            { text: "OK", style: "cancel" },
+          ]
+        );
+      } else if (msg.includes("Invalid API key") || msg.includes("You need a Google AI API key")) {
+        Alert.alert(
+          "API key needed",
+          msg,
+          [
+            { text: "Go to Settings", onPress: () => router.push("/settings") },
+            { text: "Cancel", style: "cancel" },
+          ]
+        );
       } else {
-        Alert.alert("Scan failed", msg);
+        Alert.alert("Scan failed", msg, [{ text: "OK" }]);
       }
     }
   };
@@ -108,6 +123,7 @@ export default function CaptureScreen() {
 
       {!scanned ? (
         <View style={styles.captureContainer}>
+          {!hasKey && <ApiKeyBanner />}
           <View style={styles.heroText}>
             <Text style={[styles.heading, { color: colors.foreground }]}>
               What&apos;s in the kitchen?

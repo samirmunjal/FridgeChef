@@ -61,11 +61,15 @@ router.post("/recipes/detect-ingredients", async (req, res): Promise<void> => {
     req.log.error({ err }, "Failed to detect ingredients");
     const msg = (err as { message?: string }).message || "";
     if (msg.includes("quota") || msg.includes("429")) {
-      res.status(429).json({ error: "Your API key quota was exceeded. Please wait a moment or use a different key." });
+      res.status(429).json({ error: "Your API key quota was exceeded. Please wait a moment or use a different key in Settings." });
       return;
     }
     if (msg.includes("API key not valid")) {
       res.status(401).json({ error: "Invalid API key. Please check your key in Settings." });
+      return;
+    }
+    if (msg.includes("No API key available")) {
+      res.status(403).json({ error: "You need a Google AI API key to use FridgeChef. Please add one in Settings." });
       return;
     }
     res.status(502).json({ error: "Failed to analyze the photo. Please try again." });
@@ -126,11 +130,15 @@ Dietary restrictions: ${diets.join(", ") || "none"}.`;
     req.log.error({ err }, "Failed to suggest recipes");
     const msg = (err as { message?: string }).message || "";
     if (msg.includes("quota") || msg.includes("429")) {
-      res.status(429).json({ error: "Your API key quota was exceeded. Please wait a moment or use a different key." });
+      res.status(429).json({ error: "Your API key quota was exceeded. Please wait a moment or use a different key in Settings." });
       return;
     }
     if (msg.includes("API key not valid")) {
       res.status(401).json({ error: "Invalid API key. Please check your key in Settings." });
+      return;
+    }
+    if (msg.includes("No API key available")) {
+      res.status(403).json({ error: "You need a Google AI API key to use FridgeChef. Please add one in Settings." });
       return;
     }
     res.status(502).json({ error: "Failed to generate recipes. Please try again." });
