@@ -15,4 +15,10 @@ export interface Recipe {
   missingIngredients: string[];
   cuisine: string;
   description: string;
+  /** Full list of ingredients needed for this recipe (including what the user already has). */
+  ingredients: string[];
+  /** Step-by-step cooking instructions. */
+  steps: string[];
+  /** Optional AI-generated food photo as base64 JPEG. */
+  imageBase64?: string;
 }

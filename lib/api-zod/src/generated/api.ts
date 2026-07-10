@@ -40,7 +40,10 @@ export const SuggestRecipesResponse = zod.object({
   "matchPercent": zod.number(),
   "missingIngredients": zod.array(zod.string()),
   "cuisine": zod.string(),
-  "description": zod.string()
+  "description": zod.string(),
+  "ingredients": zod.array(zod.string()).describe('Full list of ingredients needed for this recipe (including what the user already has).'),
+  "steps": zod.array(zod.string()).describe('Step-by-step cooking instructions.'),
+  "imageBase64": zod.string().optional().describe('Optional AI-generated food photo as base64 JPEG.')
 }))
 })
 

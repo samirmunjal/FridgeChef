@@ -87,7 +87,24 @@ router.post("/recipes/suggest", async (req, res): Promise<void> => {
       generationConfig: { responseMimeType: "application/json" },
     });
 
-    const prompt = `You are a recipe recommendation engine. Given a list of ingredients someone has on hand, plus their cuisine and dietary preferences, suggest 4-6 realistic recipes they could cook. Prefer recipes that use mostly the given ingredients, but it's fine to include 1-3 missing ingredients per recipe. Respect dietary restrictions strictly (e.g. never suggest meat for 'Vegetarian' or 'Vegan'). Respond ONLY with JSON in the form { "recipes": [{ "id": string, "title": string, "time": string (e.g. '25 min'), "difficulty": string ('Easy'|'Medium'|'Hard'), "matchPercent": integer (0-100, 100 means every ingredient is on hand), "missingIngredients": string[], "cuisine": string, "description": string (one sentence, appetizing) }] }. Sort recipes by matchPercent descending.
+    const prompt = `You are a recipe recommendation engine. Given a list of ingredients someone has on hand, plus their cuisine and dietary preferences, suggest 4-6 realistic recipes they could cook. Prefer recipes that use mostly the given ingredients, but it's fine to include 1-3 missing ingredients per recipe. Respect dietary restrictions strictly (e.g. never suggest meat for 'Vegetarian' or 'Vegan').
+
+For EACH recipe, include:
+- id: kebab-case unique ID
+- title: appetizing recipe name
+- time: cooking time like '25 min'
+- difficulty: 'Easy', 'Medium', or 'Hard'
+- matchPercent: 0-100 integer (100 means every ingredient is on hand)
+- missingIngredients: array of ingredients the user would need to buy
+- cuisine: the cuisine style
+- description: one appetizing sentence describing the dish
+- ingredients: FULL list of ALL ingredients needed for the recipe (including what the user already has), with approximate quantities (e.g. '2 eggs', '1/2 cup flour')
+- steps: array of 3-8 step-by-step cooking instructions, each as a clear sentence (e.g. 'Preheat oven to 400°F.', 'Dice tomatoes and set aside.', 'Sauté onions in olive oil until translucent.')
+
+Respond ONLY with JSON in the form:
+{ "recipes": [{ "id": string, "title": string, "time": string, "difficulty": string, "matchPercent": integer, "missingIngredients": string[], "cuisine": string, "description": string, "ingredients": string[], "steps": string[] }] }
+
+Sort recipes by matchPercent descending.
 
 Ingredients on hand: ${ingredients.join(", ") || "none specified"}.
 Cuisine preference: ${cuisines.join(", ") || "any"}.

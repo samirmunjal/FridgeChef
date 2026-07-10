@@ -124,6 +124,8 @@ components:
         - missingIngredients
         - cuisine
         - description
+        - ingredients
+        - steps
       properties:
         id:
           type: string
@@ -143,6 +145,19 @@ components:
           type: string
         description:
           type: string
+        ingredients:
+          type: array
+          items:
+            type: string
+          description: Full list of ingredients needed for this recipe (including what the user already has).
+        steps:
+          type: array
+          items:
+            type: string
+          description: Step-by-step cooking instructions.
+        imageBase64:
+          type: string
+          description: Optional AI-generated food photo as base64 JPEG.
     RecipeSuggestionResult:
       type: object
       required:

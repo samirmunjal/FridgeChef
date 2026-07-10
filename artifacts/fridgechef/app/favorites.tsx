@@ -10,13 +10,6 @@ import { useColors } from "@/hooks/useColors";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useShoppingList } from "@/context/ShoppingListContext";
 
-const RECIPE_IMAGES = [
-  require("@/assets/images/recipe-pasta.png"),
-  require("@/assets/images/recipe-tacos.png"),
-  require("@/assets/images/recipe-curry.png"),
-  require("@/assets/images/recipe-salad.png"),
-];
-
 function ShoppingCartButton() {
   const colors = useColors();
   const { savedRecipes } = useFavorites();
@@ -93,12 +86,8 @@ export default function FavoritesScreen() {
             </View>
           </View>
 
-          {savedRecipes.map((recipe, i) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              image={RECIPE_IMAGES[i % RECIPE_IMAGES.length]}
-            />
+          {savedRecipes.map((recipe) => (
+            <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
         </ScrollView>
       )}

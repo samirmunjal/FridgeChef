@@ -12,12 +12,32 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-export function RecipeCard({ recipe, image }: { recipe: Recipe; image: number }) {
+const CUISINE_IMAGES: Record<string, any> = {
+  Italian: require("@/assets/images/recipe-pasta.png"),
+  Mexican: require("@/assets/images/recipe-tacos.png"),
+  Asian: require("@/assets/images/recipe-curry.png"),
+  Indian: require("@/assets/images/recipe-curry.png"),
+  Mediterranean: require("@/assets/images/recipe-salad.png"),
+  American: require("@/assets/images/recipe-salad.png"),
+  MiddleEastern: require("@/assets/images/recipe-curry.png"),
+};
+
+function getCuisineImage(cuisine?: string) {
+  if (!cuisine) return require("@/assets/images/recipe-salad.png");
+  const normalized = cuisine.replace(/\s+/g, "").replace(/[-_]/g, "");
+  return CUISINE_IMAGES[normalized] || require("@/assets/images/recipe-salad.png");
+}
+
+export function RecipeCard({ recipe }: { recipe: Recipe }) {
   const colors = useColors();
   const { isFavorited, toggleFavorite } = useFavorites();
   const [expanded, setExpanded] = useState(false);
   const favorited = isFavorited(recipe.id);
   const perfectMatch = recipe.matchPercent >= 100;
+
+  const imageSource = recipe.imageBase64
+    ? { uri: `data:image/jpeg;base64,${recipe.imageBase64}` }
+    : getCuisineImage(recipe.cuisine);
 
   const toggleExpanded = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -42,7 +62,13 @@ export function RecipeCard({ recipe, image }: { recipe: Recipe; image: number })
       ]}
     >
       <View style={styles.imageWrap}>
-        <Image source={image} style={styles.image} contentFit="cover" />
+        {imageSource ? (
+          <Image source={imageSource} style={styles.image} contentFit="cover" />
+        ) : (
+          <View style={[styles.imageFallback, { backgroundColor: colors.muted }]}>
+            <Feather name="image" size={40} color={colors.mutedForeground} />
+          </View>
+        )}
         <Pressable
           onPress={(e) => {
             e.stopPropagation();
@@ -107,6 +133,28 @@ export function RecipeCard({ recipe, image }: { recipe: Recipe; image: number })
             <Text style={[styles.description, { color: colors.mutedForeground }]}>
               {recipe.description}
             </Text>
+
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Ingredients</Text>
+              {recipe.ingredients?.map((ing: string) => (
+                <View key={ing} style={styles.ingredientRow}>
+                  <Feather name="circle" size={6} color={colors.primary} style={styles.bullet} />
+                  <Text style={[styles.ingredientText, { color: colors.foreground }]}>{ing}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Instructions</Text>
+              {recipe.steps?.map((step: string, i: number) => (
+                <View key={i} style={styles.stepRow}>
+                  <View style={[styles.stepNumber, { backgroundColor: colors.accent }]}>
+                    <Text style={[styles.stepNumberText, { color: colors.primary }]}>{i + 1}</Text>
+                  </View>
+                  <Text style={[styles.stepText, { color: colors.foreground }]}>{step}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         )}
       </View>
@@ -128,6 +176,12 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
+  },
+  imageFallback: {
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   favoriteButton: {
     position: "absolute",
@@ -201,10 +255,56 @@ const styles = StyleSheet.create({
     marginTop: 14,
     paddingTop: 14,
     borderTopWidth: 1,
+    gap: 16,
   },
   description: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
     lineHeight: 20,
+  },
+  section: {
+    gap: 8,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontFamily: "Inter_600SemiBold",
+  },
+  ingredientRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingLeft: 2,
+  },
+  bullet: {
+    marginTop: 2,
+  },
+  ingredientText: {
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 20,
+  },
+  stepRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  stepNumber: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 1,
+    flexShrink: 0,
+  },
+  stepNumberText: {
+    fontSize: 11,
+    fontFamily: "Inter_700Bold",
+  },
+  stepText: {
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 20,
+    flex: 1,
   },
 });

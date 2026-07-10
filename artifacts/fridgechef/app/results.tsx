@@ -8,13 +8,6 @@ import { RecipeCard } from "@/components/RecipeCard";
 import { useColors } from "@/hooks/useColors";
 import { useRecipeFlow } from "@/context/RecipeFlowContext";
 
-const RECIPE_IMAGES = [
-  require("@/assets/images/recipe-pasta.png"),
-  require("@/assets/images/recipe-tacos.png"),
-  require("@/assets/images/recipe-curry.png"),
-  require("@/assets/images/recipe-salad.png"),
-];
-
 export default function ResultsScreen() {
   const colors = useColors();
   const flow = useRecipeFlow();
@@ -51,8 +44,8 @@ export default function ResultsScreen() {
           </View>
         ) : (
           <View style={styles.list}>
-            {flow.recipes.map((recipe, i) => (
-              <RecipeCard key={recipe.id} recipe={recipe} image={RECIPE_IMAGES[i % RECIPE_IMAGES.length]} />
+            {flow.recipes.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
             ))}
           </View>
         )}
