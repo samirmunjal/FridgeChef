@@ -42,7 +42,7 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={[styles.heading, { color: colors.foreground }]}>AI API Key</Text>
         <Text style={[styles.subheading, { color: colors.mutedForeground }]}>
-          This App is free but AI is not.  Google provides free AI credits with your google account. You can use your own free Google Gemini API key to use this app. Get one from Google AI Studio below.
+          This App is free but AI is not. Google provides free AI credits with your google account. You can use your own free Google Gemini API key to use this app. Get one from Google AI Studio below.
         </Text>
 
         <Pressable onPress={handleGetKey} style={styles.getKeyRow}>
