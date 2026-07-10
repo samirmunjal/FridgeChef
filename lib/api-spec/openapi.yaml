@@ -158,6 +158,9 @@ components:
         imageBase64:
           type: string
           description: Optional AI-generated food photo as base64 JPEG.
+        imageUrl:
+          type: string
+          description: Optional URL to a food photo for this recipe.
     RecipeSuggestionResult:
       type: object
       required:

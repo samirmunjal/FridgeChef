@@ -35,9 +35,11 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
   const favorited = isFavorited(recipe.id);
   const perfectMatch = recipe.matchPercent >= 100;
 
-  const imageSource = recipe.imageBase64
-    ? { uri: `data:image/jpeg;base64,${recipe.imageBase64}` }
-    : getCuisineImage(recipe.cuisine);
+  const imageSource = recipe.imageUrl
+    ? { uri: recipe.imageUrl }
+    : recipe.imageBase64
+      ? { uri: `data:image/jpeg;base64,${recipe.imageBase64}` }
+      : getCuisineImage(recipe.cuisine);
 
   const toggleExpanded = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);

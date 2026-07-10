@@ -118,6 +118,22 @@ Dietary restrictions: ${diets.join(", ") || "none"}.`;
         : []
     ) as Recipe[];
 
+    // Enrich each recipe with a real food photo from TheMealDB
+    await Promise.all(
+      recipes.map(async (recipe) => {
+        try {
+          const searchTerm = encodeURIComponent(recipe.title.split(" ").slice(0, 3).join(" "));
+          const resp = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${searchTerm}`);
+          const data = (await resp.json()) as { meals?: Array<{ strMealThumb: string }> | null };
+          if (data.meals && data.meals.length > 0) {
+            recipe.imageUrl = data.meals[0].strMealThumb;
+          }
+        } catch {
+          // Ignore image fetch failures — recipe still works without a photo
+        }
+      }),
+    );
+
     const response: RecipeSuggestionResult = { recipes };
     res.json(response);
   } catch (err) {

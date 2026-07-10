@@ -43,6 +43,8 @@ export interface Recipe {
   steps: string[];
   /** Optional AI-generated food photo as base64 JPEG. */
   imageBase64?: string;
+  /** Optional URL to a food photo for this recipe. */
+  imageUrl?: string;
 }
 
 export interface RecipeSuggestionResult {
