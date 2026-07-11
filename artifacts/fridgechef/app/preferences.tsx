@@ -36,24 +36,18 @@ export default function PreferencesScreen() {
       const msg =
         typeof e === "object" && e !== null && "response" in e && (e as { response?: { data?: { error?: string } } }).response?.data?.error
           ? (e as { response?: { data?: { error?: string } } }).response!.data!.error!
-          : "We couldn't generate recipes. Please try again.";
-      if (msg.includes("quota")) {
+          : "We couldn't find recipes. Please try again.";
+      if (msg.includes("quota") || msg.includes("limit")) {
         Alert.alert(
-          "Daily quota used up",
-          "Your Google AI key hit its free daily limit. It resets every 24 hours, or you can add a different key.",
-          [
-            { text: "Go to Settings", onPress: () => router.push("/settings") },
-            { text: "OK", style: "cancel" },
-          ]
+          "Daily limit reached",
+          "Recipe search limit hit for today. It resets every 24 hours.",
+          [{ text: "OK", style: "cancel" }]
         );
-      } else if (msg.includes("Invalid API key") || msg.includes("You need a Google AI API key")) {
+      } else if (msg.includes("No recipes found")) {
         Alert.alert(
-          "API key needed",
-          msg,
-          [
-            { text: "Go to Settings", onPress: () => router.push("/settings") },
-            { text: "Cancel", style: "cancel" },
-          ]
+          "No recipes found",
+          "Try adding more ingredients or broadening your cuisine preferences.",
+          [{ text: "OK" }]
         );
       } else {
         Alert.alert("Something went wrong", msg, [{ text: "OK" }]);

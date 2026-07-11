@@ -15,6 +15,21 @@ function getGenAI(apiKey?: string) {
 
 const router: IRouter = Router();
 
+// Strip HTML tags for plain-text descriptions
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Infer difficulty from time and steps
+function inferDifficulty(readyInMinutes: number, stepCount: number): string {
+  if (stepCount <= 3 && readyInMinutes <= 20) return "Easy";
+  if (stepCount <= 6 && readyInMinutes <= 45) return "Medium";
+  return "Hard";
+}
+
 router.post("/recipes/detect-ingredients", async (req, res): Promise<void> => {
   const parsed = DetectIngredientsBody.safeParse(req.body);
   if (!parsed.success) {
@@ -70,6 +85,116 @@ router.post("/recipes/detect-ingredients", async (req, res): Promise<void> => {
   }
 });
 
+// Spoonacular types
+interface SpoonacularSearchResult {
+  id: number;
+  title: string;
+  image?: string;
+  usedIngredients: Array<{ name: string }>;
+  missedIngredients: Array<{ name: string }>;
+}
+
+interface SpoonacularRecipeInfo {
+  id: number;
+  title: string;
+  image?: string;
+  readyInMinutes?: number;
+  summary?: string;
+  cuisines?: string[];
+  diets?: string[];
+  extendedIngredients?: Array<{ original: string }>;
+  analyzedInstructions?: Array<{ steps: Array<{ step: string }> }>;
+}
+
+async function fetchSpoonacularRecipes(
+  ingredients: string[],
+  cuisines: string[],
+  diets: string[],
+  apiKey: string,
+): Promise<Recipe[]> {
+  const params = new URLSearchParams();
+  params.set("includeIngredients", ingredients.join(","));
+  params.set("number", "6");
+  params.set("addRecipeInformation", "true");
+  params.set("fillIngredients", "true");
+  params.set("instructionsRequired", "true");
+  params.set("ranking", "1"); // maximize used ingredients
+  params.set("apiKey", apiKey);
+
+  if (cuisines.length > 0) {
+    params.set("cuisine", cuisines.join(","));
+  }
+  if (diets.length > 0) {
+    params.set("diet", diets.join(","));
+  }
+
+  const searchResp = await fetch(
+    `https://api.spoonacular.com/recipes/complexSearch?${params.toString()}`,
+  );
+  if (!searchResp.ok) {
+    const body = await searchResp.text();
+    throw new Error(`Spoonacular search failed: ${searchResp.status} ${body}`);
+  }
+
+  const searchData = (await searchResp.json()) as {
+    results: SpoonacularSearchResult[];
+  };
+
+  if (!Array.isArray(searchData.results) || searchData.results.length === 0) {
+    return [];
+  }
+
+  // For each recipe, fetch full details via the information endpoint
+  // This ensures we get complete steps and ingredients
+  const recipes: Recipe[] = [];
+
+  for (const summary of searchData.results) {
+    try {
+      const infoResp = await fetch(
+        `https://api.spoonacular.com/recipes/${summary.id}/information?apiKey=${apiKey}`,
+      );
+      if (!infoResp.ok) continue;
+
+      const info = (await infoResp.json()) as SpoonacularRecipeInfo;
+      const steps =
+        info.analyzedInstructions && info.analyzedInstructions[0]
+          ? info.analyzedInstructions[0].steps.map((s) => s.step)
+          : [];
+
+      const allIngredients =
+        info.extendedIngredients?.map((ing) => ing.original) ?? [];
+      const missed = summary.missedIngredients.map((m) => m.name);
+      const used = summary.usedIngredients.map((u) => u.name);
+      const total = used.length + missed.length;
+      const matchPercent = total > 0 ? Math.round((used.length / total) * 100) : 0;
+      const readyInMinutes = info.readyInMinutes ?? 30;
+
+      const recipe: Recipe = {
+        id: String(info.id),
+        title: info.title,
+        time: `${readyInMinutes} min`,
+        difficulty: inferDifficulty(readyInMinutes, steps.length),
+        matchPercent,
+        missingIngredients: missed,
+        cuisine: info.cuisines && info.cuisines.length > 0 ? info.cuisines[0] : "Mixed",
+        description: info.summary ? stripHtml(info.summary).slice(0, 200) : `${info.title} is a delicious recipe you can make with your ingredients.`,
+        ingredients: allIngredients,
+        steps,
+        imageUrl: info.image || summary.image || undefined,
+      };
+
+      recipes.push(recipe);
+    } catch {
+      // Skip individual recipe failures
+    }
+  }
+
+  // Sort by matchPercent descending
+  recipes.sort((a, b) => (b.matchPercent ?? 0) - (a.matchPercent ?? 0));
+
+  return recipes;
+}
+
 router.post("/recipes/suggest", async (req, res): Promise<void> => {
   const parsed = SuggestRecipesBody.safeParse(req.body);
   if (!parsed.success) {
@@ -77,88 +202,46 @@ router.post("/recipes/suggest", async (req, res): Promise<void> => {
     return;
   }
 
-  const { ingredients, cuisines, diets, apiKey } = parsed.data;
+  const { ingredients, cuisines, diets } = parsed.data;
+  const spoonKey = process.env["SPOONACULAR_API_KEY"];
+
+  if (!spoonKey) {
+    res.status(503).json({
+      error: "Recipe service is temporarily unavailable. Please try again later.",
+    });
+    return;
+  }
 
   try {
-    const model = getGenAI(apiKey).getGenerativeModel({
-      model: "gemini-3.5-flash",
-      generationConfig: { responseMimeType: "application/json" },
-    });
+    const recipes = await fetchSpoonacularRecipes(ingredients, cuisines, diets, spoonKey);
 
-    const prompt = `You are a recipe recommendation engine. Given a list of ingredients someone has on hand, plus their cuisine and dietary preferences, suggest 4-6 realistic recipes they could cook. Prefer recipes that use mostly the given ingredients, but it's fine to include 1-3 missing ingredients per recipe. Respect dietary restrictions strictly (e.g. never suggest meat for 'Vegetarian' or 'Vegan').
-
-For EACH recipe, include:
-- id: kebab-case unique ID
-- title: appetizing recipe name
-- time: cooking time like '25 min'
-- difficulty: 'Easy', 'Medium', or 'Hard'
-- matchPercent: 0-100 integer (100 means every ingredient is on hand)
-- missingIngredients: array of ingredients the user would need to buy
-- cuisine: the cuisine style
-- description: one appetizing sentence describing the dish
-- ingredients: FULL list of ALL ingredients needed for the recipe (including what the user already has), with approximate quantities (e.g. '2 eggs', '1/2 cup flour')
-- steps: array of 3-8 step-by-step cooking instructions, each as a clear sentence (e.g. 'Preheat oven to 400°F.', 'Dice tomatoes and set aside.', 'Sauté onions in olive oil until translucent.')
-
-Respond ONLY with JSON in the form:
-{ "recipes": [{ "id": string, "title": string, "time": string, "difficulty": string, "matchPercent": integer, "missingIngredients": string[], "cuisine": string, "description": string, "ingredients": string[], "steps": string[] }] }
-
-Sort recipes by matchPercent descending.
-
-Ingredients on hand: ${ingredients.join(", ") || "none specified"}.
-Cuisine preference: ${cuisines.join(", ") || "any"}.
-Dietary restrictions: ${diets.join(", ") || "none"}.`;
-
-    const result = await model.generateContent(prompt);
-    const raw = result.response.text();
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    const json: unknown = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
-    const recipes = (
-      Array.isArray((json as { recipes?: unknown }).recipes)
-        ? (json as { recipes: unknown[] }).recipes
-        : []
-    ) as Recipe[];
-
-    // Enrich each recipe with a real food photo from Pexels
-    const pexelsKey = process.env["PEXELS_API_KEY"];
-    if (pexelsKey) {
-      await Promise.all(
-        recipes.map(async (recipe) => {
-          try {
-            const searchTerm = encodeURIComponent(`${recipe.title} food`);
-            const resp = await fetch(`https://api.pexels.com/v1/search?query=${searchTerm}&per_page=5`, {
-              headers: { Authorization: pexelsKey },
-            });
-            const data = (await resp.json()) as { photos?: Array<{ src?: { medium?: string } }> };
-            if (data.photos && data.photos.length > 0) {
-              // Pick a random photo so different recipes get different images even with similar titles
-              const idx = Math.floor(Math.random() * data.photos.length);
-              recipe.imageUrl = data.photos[idx].src?.medium ?? undefined;
-            }
-          } catch {
-            // Ignore image fetch failures — recipe still works without a photo
-          }
-        }),
-      );
+    if (recipes.length === 0) {
+      res.status(404).json({
+        error: "No recipes found for your ingredients. Try adding more items or broadening your cuisine preferences.",
+      });
+      return;
     }
 
     const response: RecipeSuggestionResult = { recipes };
     res.json(response);
   } catch (err) {
-    req.log.error({ err }, "Failed to suggest recipes");
+    req.log.error({ err }, "Failed to suggest recipes via Spoonacular");
     const msg = (err as { message?: string }).message || "";
-    if (msg.includes("quota") || msg.includes("429")) {
-      res.status(429).json({ error: "Your API key quota was exceeded. Please wait a moment or use a different key in Settings." });
+    if (msg.includes("402") || msg.includes("quota") || msg.includes("limit")) {
+      res.status(429).json({
+        error: "Recipe search quota exceeded for today. Please try again tomorrow.",
+      });
       return;
     }
-    if (msg.includes("API key not valid")) {
-      res.status(401).json({ error: "Invalid API key. Please check your key in Settings." });
+    if (msg.includes("401") || msg.includes("Invalid API key")) {
+      res.status(500).json({
+        error: "Recipe service configuration error. Please contact support.",
+      });
       return;
     }
-    if (msg.includes("No API key available")) {
-      res.status(403).json({ error: "You need a Google AI API key to use FridgeChef. Please add one in Settings." });
-      return;
-    }
-    res.status(502).json({ error: "Failed to generate recipes. Please try again." });
+    res.status(502).json({
+      error: "Failed to fetch recipes. Please try again.",
+    });
   }
 });
 

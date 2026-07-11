@@ -10,6 +10,6 @@ export interface RecipeSuggestionInput {
   ingredients: string[];
   cuisines: string[];
   diets: string[];
-  /** Optional user-provided Gemini API key. If omitted, the server uses its own key. */
+  /** User-provided Gemini API key (used only for photo ingredient detection). Recipe suggestions use Spoonacular and do not require this key. */
   apiKey?: string;
 }

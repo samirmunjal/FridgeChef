@@ -12,7 +12,7 @@ export interface HealthStatus {
 export interface IngredientDetectionInput {
   /** Base64-encoded JPEG/PNG image data (no data URL prefix) */
   imageBase64: string;
-  /** Optional user-provided Gemini API key. If omitted, the server uses its own key. */
+  /** User-provided Gemini API key (used only for photo ingredient detection). Recipe suggestions use Spoonacular and do not require this key. */
   apiKey?: string;
 }
 
@@ -24,7 +24,7 @@ export interface RecipeSuggestionInput {
   ingredients: string[];
   cuisines: string[];
   diets: string[];
-  /** Optional user-provided Gemini API key. If omitted, the server uses its own key. */
+  /** User-provided Gemini API key (used only for photo ingredient detection). Recipe suggestions use Spoonacular and do not require this key. */
   apiKey?: string;
 }
 

@@ -81,7 +81,7 @@ components:
           description: Base64-encoded JPEG/PNG image data (no data URL prefix)
         apiKey:
           type: string
-          description: Optional user-provided Gemini API key. If omitted, the server uses its own key.
+          description: User-provided Gemini API key (used only for photo ingredient detection). Recipe suggestions use Spoonacular and do not require this key.
     IngredientDetectionResult:
       type: object
       required:
@@ -112,7 +112,7 @@ components:
             type: string
         apiKey:
           type: string
-          description: Optional user-provided Gemini API key. If omitted, the server uses its own key.
+          description: User-provided Gemini API key (used only for photo ingredient detection). Recipe suggestions use Spoonacular and do not require this key.
     Recipe:
       type: object
       required:

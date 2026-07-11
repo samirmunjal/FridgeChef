@@ -42,19 +42,19 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={[styles.heading, { color: colors.foreground }]}>AI API Key</Text>
         <Text style={[styles.subheading, { color: colors.mutedForeground }]}>
-          This App is free but AI is not. Google provides free AI credits with your google account. You can use your own free Google Gemini API key to use this app. Get one from Google AI Studio below.
+          Your Google Gemini API key is only needed for the photo scan feature (detecting ingredients from your fridge photo). Recipe suggestions come from Spoonacular and do not use your key.
         </Text>
 
         <Pressable onPress={handleGetKey} style={styles.getKeyRow}>
           <Feather name="external-link" size={14} color={colors.primary} />
           <Text style={[styles.getKeyText, { color: colors.primary }]}>
-            Add your Google AI API Key
+            Get a free Google AI API Key
           </Text>
         </Pressable>
 
         <View style={styles.inputSection}>
           <Text style={[styles.label, { color: colors.mutedForeground }]}>
-            Your Gemini API Key
+            Your Gemini API Key (for photo scanning)
           </Text>
           <View
             style={[
@@ -117,7 +117,7 @@ export default function SettingsScreen() {
         <View style={[styles.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Feather name="info" size={16} color={colors.mutedForeground} />
           <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
-            Your key is stored only on this device and sent directly to Gemini for each request. We never log or share it.
+            Your key is stored only on this device and sent directly to Gemini for photo scanning. Recipes use Spoonacular (free, no key needed). We never log or share your key.
           </Text>
         </View>
       </ScrollView>

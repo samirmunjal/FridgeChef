@@ -13,7 +13,7 @@ import * as zod from 'zod';
  */
 export const DetectIngredientsBody = zod.object({
   "imageBase64": zod.string().describe('Base64-encoded JPEG\/PNG image data (no data URL prefix)'),
-  "apiKey": zod.string().optional().describe('Optional user-provided Gemini API key. If omitted, the server uses its own key.')
+  "apiKey": zod.string().optional().describe('User-provided Gemini API key (used only for photo ingredient detection). Recipe suggestions use Spoonacular and do not require this key.')
 })
 
 export const DetectIngredientsResponse = zod.object({
@@ -28,7 +28,7 @@ export const SuggestRecipesBody = zod.object({
   "ingredients": zod.array(zod.string()),
   "cuisines": zod.array(zod.string()),
   "diets": zod.array(zod.string()),
-  "apiKey": zod.string().optional().describe('Optional user-provided Gemini API key. If omitted, the server uses its own key.')
+  "apiKey": zod.string().optional().describe('User-provided Gemini API key (used only for photo ingredient detection). Recipe suggestions use Spoonacular and do not require this key.')
 })
 
 export const SuggestRecipesResponse = zod.object({
