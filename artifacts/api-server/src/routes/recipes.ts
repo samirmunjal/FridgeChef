@@ -85,16 +85,45 @@ router.post("/recipes/detect-ingredients", async (req, res): Promise<void> => {
   }
 });
 
-// Spoonacular types
-interface SpoonacularSearchResult {
-  id: number;
-  title: string;
-  image?: string;
-  usedIngredients: Array<{ name: string }>;
-  missedIngredients: Array<{ name: string }>;
+// ---------------------------------------------------------------------------
+// In-memory recipe cache (saves API points on repeat searches)
+// ---------------------------------------------------------------------------
+interface CacheEntry {
+  recipes: Recipe[];
+  timestamp: number;
 }
 
-interface SpoonacularRecipeInfo {
+const recipeCache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 1000 * 60 * 60 * 2; // 2 hours
+
+function makeCacheKey(ingredients: string[], cuisines: string[], diets: string[]): string {
+  const parts = [
+    ingredients.slice().sort().join(","),
+    cuisines.slice().sort().join(","),
+    diets.slice().sort().join(","),
+  ];
+  return parts.join("|");
+}
+
+function getCachedRecipes(key: string): Recipe[] | null {
+  const entry = recipeCache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+    recipeCache.delete(key);
+    return null;
+  }
+  return entry.recipes;
+}
+
+function setCachedRecipes(key: string, recipes: Recipe[]): void {
+  recipeCache.set(key, { recipes, timestamp: Date.now() });
+}
+
+// ---------------------------------------------------------------------------
+// Spoonacular — single call with full recipe info
+// ---------------------------------------------------------------------------
+
+interface SpoonacularRecipeResult {
   id: number;
   title: string;
   image?: string;
@@ -104,6 +133,8 @@ interface SpoonacularRecipeInfo {
   diets?: string[];
   extendedIngredients?: Array<{ original: string }>;
   analyzedInstructions?: Array<{ steps: Array<{ step: string }> }>;
+  usedIngredients?: Array<{ name: string }>;
+  missedIngredients?: Array<{ name: string }>;
 }
 
 async function fetchSpoonacularRecipes(
@@ -125,7 +156,7 @@ async function fetchSpoonacularRecipes(
     params.set("cuisine", cuisines.join(","));
   }
 
-  // Spoonacular "diet" param: vegetarian, vegan, gluten free, dairy free, ketogenic, paleo, etc.
+  // Spoonacular "diet" param values
   const spoonacularDiets = ["vegetarian", "vegan", "gluten free", "dairy free", "ketogenic", "paleo", "whole 30", "primal", "pescetarian"];
   const mappedDiets = diets.map((d) => d.toLowerCase().replace(/-/g, " "));
   const validDiets = mappedDiets.filter((d) => spoonacularDiets.includes(d));
@@ -133,7 +164,7 @@ async function fetchSpoonacularRecipes(
     params.set("diet", validDiets.join(","));
   }
 
-  // Spoonacular "intolerances" param for allergies
+  // Intolerances for allergies
   const intolerances: string[] = [];
   if (mappedDiets.includes("nuts free")) {
     intolerances.push("tree nut");
@@ -151,56 +182,45 @@ async function fetchSpoonacularRecipes(
   }
 
   const searchData = (await searchResp.json()) as {
-    results: SpoonacularSearchResult[];
+    results: SpoonacularRecipeResult[];
   };
 
   if (!Array.isArray(searchData.results) || searchData.results.length === 0) {
     return [];
   }
 
-  // For each recipe, fetch full details via the information endpoint
-  // This ensures we get complete steps and ingredients
   const recipes: Recipe[] = [];
 
-  for (const summary of searchData.results) {
-    try {
-      const infoResp = await fetch(
-        `https://api.spoonacular.com/recipes/${summary.id}/information?apiKey=${apiKey}`,
-      );
-      if (!infoResp.ok) continue;
+  for (const info of searchData.results) {
+    const steps =
+      info.analyzedInstructions && info.analyzedInstructions[0]
+        ? info.analyzedInstructions[0].steps.map((s) => s.step)
+        : [];
 
-      const info = (await infoResp.json()) as SpoonacularRecipeInfo;
-      const steps =
-        info.analyzedInstructions && info.analyzedInstructions[0]
-          ? info.analyzedInstructions[0].steps.map((s) => s.step)
-          : [];
+    const allIngredients =
+      info.extendedIngredients?.map((ing) => ing.original) ?? [];
 
-      const allIngredients =
-        info.extendedIngredients?.map((ing) => ing.original) ?? [];
-      const missed = summary.missedIngredients.map((m) => m.name);
-      const used = summary.usedIngredients.map((u) => u.name);
-      const total = used.length + missed.length;
-      const matchPercent = total > 0 ? Math.round((used.length / total) * 100) : 0;
-      const readyInMinutes = info.readyInMinutes ?? 30;
+    const missed = (info.missedIngredients ?? []).map((m) => m.name);
+    const used = (info.usedIngredients ?? []).map((u) => u.name);
+    const total = used.length + missed.length;
+    const matchPercent = total > 0 ? Math.round((used.length / total) * 100) : 0;
+    const readyInMinutes = info.readyInMinutes ?? 30;
 
-      const recipe: Recipe = {
-        id: String(info.id),
-        title: info.title,
-        time: `${readyInMinutes} min`,
-        difficulty: inferDifficulty(readyInMinutes, steps.length),
-        matchPercent,
-        missingIngredients: missed,
-        cuisine: info.cuisines && info.cuisines.length > 0 ? info.cuisines[0] : "Mixed",
-        description: info.summary ? stripHtml(info.summary).slice(0, 200) : `${info.title} is a delicious recipe you can make with your ingredients.`,
-        ingredients: allIngredients,
-        steps,
-        imageUrl: info.image || summary.image || undefined,
-      };
+    const recipe: Recipe = {
+      id: String(info.id),
+      title: info.title,
+      time: `${readyInMinutes} min`,
+      difficulty: inferDifficulty(readyInMinutes, steps.length),
+      matchPercent,
+      missingIngredients: missed,
+      cuisine: info.cuisines && info.cuisines.length > 0 ? info.cuisines[0] : "Mixed",
+      description: info.summary ? stripHtml(info.summary).slice(0, 200) : `${info.title} is a delicious recipe you can make with your ingredients.`,
+      ingredients: allIngredients,
+      steps,
+      imageUrl: info.image || undefined,
+    };
 
-      recipes.push(recipe);
-    } catch {
-      // Skip individual recipe failures
-    }
+    recipes.push(recipe);
   }
 
   // Sort by matchPercent descending
@@ -208,6 +228,10 @@ async function fetchSpoonacularRecipes(
 
   return recipes;
 }
+
+// ---------------------------------------------------------------------------
+// Recipe suggestion route (uses Spoonacular + cache)
+// ---------------------------------------------------------------------------
 
 router.post("/recipes/suggest", async (req, res): Promise<void> => {
   const parsed = SuggestRecipesBody.safeParse(req.body);
@@ -218,6 +242,15 @@ router.post("/recipes/suggest", async (req, res): Promise<void> => {
 
   const { ingredients, cuisines, diets } = parsed.data;
   const spoonKey = process.env["SPOONACULAR_API_KEY"];
+
+  // Check cache first
+  const cacheKey = makeCacheKey(ingredients, cuisines, diets);
+  const cached = getCachedRecipes(cacheKey);
+  if (cached && cached.length > 0) {
+    req.log.info("Serving cached recipes");
+    res.json({ recipes: cached });
+    return;
+  }
 
   if (!spoonKey) {
     res.status(503).json({
@@ -236,12 +269,21 @@ router.post("/recipes/suggest", async (req, res): Promise<void> => {
       return;
     }
 
+    // Store in cache
+    setCachedRecipes(cacheKey, recipes);
+
     const response: RecipeSuggestionResult = { recipes };
     res.json(response);
   } catch (err) {
     req.log.error({ err }, "Failed to suggest recipes via Spoonacular");
     const msg = (err as { message?: string }).message || "";
     if (msg.includes("402") || msg.includes("quota") || msg.includes("limit")) {
+      // Try serving stale cache as fallback
+      const stale = getStaleRecipes(cacheKey);
+      if (stale && stale.length > 0) {
+        res.json({ recipes: stale });
+        return;
+      }
       res.status(429).json({
         error: "Recipe search quota exceeded for today. Please try again tomorrow.",
       });
@@ -258,5 +300,11 @@ router.post("/recipes/suggest", async (req, res): Promise<void> => {
     });
   }
 });
+
+// Get stale (expired) cache entries as fallback when quota runs out
+function getStaleRecipes(key: string): Recipe[] | null {
+  const entry = recipeCache.get(key);
+  return entry ? entry.recipes : null;
+}
 
 export default router;

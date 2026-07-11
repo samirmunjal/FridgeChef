@@ -34,10 +34,12 @@ export default function PreferencesScreen() {
       router.push("/results");
     } catch (e: unknown) {
       const msg =
-        typeof e === "object" && e !== null && "response" in e && (e as { response?: { data?: { error?: string } } }).response?.data?.error
-          ? (e as { response?: { data?: { error?: string } } }).response!.data!.error!
-          : "We couldn't find recipes. Please try again.";
-      if (msg.includes("quota") || msg.includes("limit")) {
+        typeof e === "object" && e !== null && "data" in e && (e as { data?: { error?: string } }).data?.error
+          ? (e as { data?: { error?: string } }).data!.error!
+          : typeof e === "object" && e !== null && "message" in e && typeof (e as { message?: string }).message === "string"
+            ? (e as { message: string }).message
+            : "We couldn't find recipes. Please try again.";
+      if (msg.includes("quota") || msg.includes("limit") || msg.includes("Daily limit")) {
         Alert.alert(
           "Daily limit reached",
           "Recipe search limit hit for today. It resets every 24 hours.",
