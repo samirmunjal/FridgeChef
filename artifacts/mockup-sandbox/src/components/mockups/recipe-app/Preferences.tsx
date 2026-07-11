@@ -8,7 +8,7 @@ const cuisines = [
 ];
 
 const diets = [
-  "Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Low-Carb", "Keto", "Paleo"
+  "Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nuts-Free", "Low-Carb", "Keto", "Paleo"
 ];
 
 export function Preferences() {

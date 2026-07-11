@@ -124,8 +124,22 @@ async function fetchSpoonacularRecipes(
   if (cuisines.length > 0) {
     params.set("cuisine", cuisines.join(","));
   }
-  if (diets.length > 0) {
-    params.set("diet", diets.join(","));
+
+  // Spoonacular "diet" param: vegetarian, vegan, gluten free, dairy free, ketogenic, paleo, etc.
+  const spoonacularDiets = ["vegetarian", "vegan", "gluten free", "dairy free", "ketogenic", "paleo", "whole 30", "primal", "pescetarian"];
+  const mappedDiets = diets.map((d) => d.toLowerCase().replace(/-/g, " "));
+  const validDiets = mappedDiets.filter((d) => spoonacularDiets.includes(d));
+  if (validDiets.length > 0) {
+    params.set("diet", validDiets.join(","));
+  }
+
+  // Spoonacular "intolerances" param for allergies
+  const intolerances: string[] = [];
+  if (mappedDiets.includes("nuts free")) {
+    intolerances.push("tree nut");
+  }
+  if (intolerances.length > 0) {
+    params.set("intolerances", intolerances.join(","));
   }
 
   const searchResp = await fetch(

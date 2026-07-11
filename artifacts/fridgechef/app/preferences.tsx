@@ -12,7 +12,7 @@ import { useRecipeFlow } from "@/context/RecipeFlowContext";
 import { useApiKey } from "@/context/ApiKeyContext";
 
 const CUISINES = ["Italian", "Mexican", "Asian", "Mediterranean", "American", "Indian", "Middle Eastern", "Any"];
-const DIETS = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Low-Carb", "Keto", "Paleo"];
+const DIETS = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nuts-Free", "Low-Carb", "Keto", "Paleo"];
 
 export default function PreferencesScreen() {
   const colors = useColors();
