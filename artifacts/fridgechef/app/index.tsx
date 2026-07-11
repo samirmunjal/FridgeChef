@@ -35,7 +35,7 @@ export default function CaptureScreen() {
     if (!hasKey) {
       Alert.alert(
         "API key needed",
-        "Add your free Google AI key in Settings to scan ingredients from photos. Recipe suggestions do not need a key.",
+        "Add your free Google AI key in Settings to use FridgeChef.",
         [
           { text: "Go to Settings", onPress: () => router.push("/settings") },
           { text: "Cancel", style: "cancel" },

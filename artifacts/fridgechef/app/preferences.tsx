@@ -39,11 +39,14 @@ export default function PreferencesScreen() {
           : typeof e === "object" && e !== null && "message" in e && typeof (e as { message?: string }).message === "string"
             ? (e as { message: string }).message
             : "We couldn't find recipes. Please try again.";
-      if (msg.includes("quota") || msg.includes("limit") || msg.includes("Daily limit")) {
+      if (msg.includes("quota") || msg.includes("limit")) {
         Alert.alert(
-          "Daily limit reached",
-          "Recipe search limit hit for today. It resets every 24 hours.",
-          [{ text: "OK", style: "cancel" }]
+          "Daily quota used up",
+          "Your API key hit its free daily limit. It resets every 24 hours, or you can add a different key.",
+          [
+            { text: "Go to Settings", onPress: () => router.push("/settings") },
+            { text: "OK", style: "cancel" },
+          ]
         );
       } else if (msg.includes("No recipes found")) {
         Alert.alert(
