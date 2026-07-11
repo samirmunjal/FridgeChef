@@ -118,30 +118,28 @@ Dietary restrictions: ${diets.join(", ") || "none"}.`;
         : []
     ) as Recipe[];
 
-    // Enrich each recipe with a real food photo from TheMealDB
-    await Promise.all(
-      recipes.map(async (recipe) => {
-        try {
-          // Clean the first ingredient: strip quantity, unit, and prep words
-          let raw = (recipe.ingredients[0] || "").split(",")[0].trim();
-          raw = raw.replace(/^[\d\s.\u00bd\u00bc\u00be\u2153\u2154\u2155\u2156\u2157\u2158\u2159\u215a\u215b\u215c\u215d\u215e\-\/]+/g, "").trim();
-          const stopWords = new Set(["cup","cups","tbsp","tsp","oz","lb","g","ml","l","pound","pounds","ounce","ounces","tablespoon","tablespoons","teaspoon","teaspoons","pinch","dash","can","cans","piece","pieces","slice","slices","clove","cloves","bunch","bunches","head","heads","sprig","sprigs","medium","large","small","whole","fresh","chopped","diced","sliced","minced","grated","peeled","cored","of","a","the"]);
-          const words = raw.split(/\s+/).filter(w => w && !stopWords.has(w.toLowerCase()));
-          const searchTerm = words.join(" ").toLowerCase();
-          if (!searchTerm) return;
-
-          const resp = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(searchTerm)}`);
-          const data = (await resp.json()) as { meals?: Array<{ strMealThumb: string }> | null };
-          if (data.meals && data.meals.length > 0) {
-            // Pick a random meal so different recipes with the same ingredient get different photos
-            const idx = Math.floor(Math.random() * data.meals.length);
-            recipe.imageUrl = data.meals[idx].strMealThumb;
+    // Enrich each recipe with a real food photo from Pexels
+    const pexelsKey = process.env["PEXELS_API_KEY"];
+    if (pexelsKey) {
+      await Promise.all(
+        recipes.map(async (recipe) => {
+          try {
+            const searchTerm = encodeURIComponent(`${recipe.title} food`);
+            const resp = await fetch(`https://api.pexels.com/v1/search?query=${searchTerm}&per_page=5`, {
+              headers: { Authorization: pexelsKey },
+            });
+            const data = (await resp.json()) as { photos?: Array<{ src?: { medium?: string } }> };
+            if (data.photos && data.photos.length > 0) {
+              // Pick a random photo so different recipes get different images even with similar titles
+              const idx = Math.floor(Math.random() * data.photos.length);
+              recipe.imageUrl = data.photos[idx].src?.medium ?? undefined;
+            }
+          } catch {
+            // Ignore image fetch failures — recipe still works without a photo
           }
-        } catch {
-          // Ignore image fetch failures — recipe still works without a photo
-        }
-      }),
-    );
+        }),
+      );
+    }
 
     const response: RecipeSuggestionResult = { recipes };
     res.json(response);
