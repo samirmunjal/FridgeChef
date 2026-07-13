@@ -146,14 +146,12 @@ export default function CaptureScreen() {
               What&apos;s in the kitchen?
             </Text>
             <Text style={[styles.subheading, { color: colors.mutedForeground }]}>
-              {Platform.OS === "web"
-                ? "Upload a photo and we\u2019ll figure out what you can cook tonight."
-                : "Snap a photo and we\u2019ll figure out what you can cook tonight."}
+              Snap a photo and we&apos;ll figure out what you can cook tonight.
             </Text>
           </View>
 
           <Pressable
-            onPress={() => handleScan(false)}
+            onPress={() => handleScan(Platform.OS !== "web")}
             disabled={detectIngredients.isPending}
             testID="photo-preview"
             style={[styles.photoFrame, { backgroundColor: colors.muted, borderColor: colors.border }]}
@@ -183,31 +181,21 @@ export default function CaptureScreen() {
               { backgroundColor: colors.primary, opacity: pressed || detectIngredients.isPending ? 0.85 : 1 },
             ]}
           >
-            <Feather
-              name={Platform.OS === "web" ? "upload" : "camera"}
-              size={20}
-              color={colors.primaryForeground}
-            />
+            <Feather name="camera" size={20} color={colors.primaryForeground} />
             <Text style={[styles.primaryButtonText, { color: colors.primaryForeground }]}>
-              {detectIngredients.isPending
-                ? "Analyzing..."
-                : Platform.OS === "web"
-                  ? "Upload Photo"
-                  : "Scan Ingredients"}
+              {detectIngredients.isPending ? "Analyzing..." : "Scan Ingredients"}
             </Text>
           </Pressable>
 
-          {Platform.OS !== "web" && (
-            <Pressable
-              onPress={() => handleScan(false)}
-              disabled={detectIngredients.isPending}
-              style={styles.secondaryLink}
-            >
-              <Text style={[styles.secondaryLinkText, { color: colors.mutedForeground }]}>
-                Choose a photo instead
-              </Text>
-            </Pressable>
-          )}
+          <Pressable
+            onPress={() => handleScan(false)}
+            disabled={detectIngredients.isPending}
+            style={styles.secondaryLink}
+          >
+            <Text style={[styles.secondaryLinkText, { color: colors.mutedForeground }]}>
+              Choose a photo instead
+            </Text>
+          </Pressable>
         </View>
       ) : (
         <View style={styles.resultsContainer}>
