@@ -40,22 +40,31 @@ export default function PreferencesScreen() {
             ? (e as { message: string }).message
             : "We couldn't find recipes. Please try again.";
       if (msg.includes("quota") || msg.includes("limit")) {
-        Alert.alert(
-          "Daily quota used up",
-          "Your API key hit its free daily limit. It resets every 24 hours, or you can add a different key.",
-          [
-            { text: "Go to Settings", onPress: () => router.push("/settings") },
-            { text: "OK", style: "cancel" },
-          ]
-        );
+        // Alert.alert is blocked in browser iframes — navigate directly on web
+        if (Platform.OS === "web") {
+          router.push("/settings");
+        } else {
+          Alert.alert(
+            "Daily quota used up",
+            "Your API key hit its free daily limit. It resets every 24 hours, or you can add a different key.",
+            [
+              { text: "Go to Settings", onPress: () => router.push("/settings") },
+              { text: "OK", style: "cancel" },
+            ]
+          );
+        }
       } else if (msg.includes("No recipes found")) {
-        Alert.alert(
-          "No recipes found",
-          "Try adding more ingredients or broadening your cuisine preferences.",
-          [{ text: "OK" }]
-        );
+        if (Platform.OS !== "web") {
+          Alert.alert(
+            "No recipes found",
+            "Try adding more ingredients or broadening your cuisine preferences.",
+            [{ text: "OK" }]
+          );
+        }
       } else {
-        Alert.alert("Something went wrong", msg, [{ text: "OK" }]);
+        if (Platform.OS !== "web") {
+          Alert.alert("Something went wrong", msg, [{ text: "OK" }]);
+        }
       }
     }
   };

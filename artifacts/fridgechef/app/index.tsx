@@ -33,14 +33,19 @@ export default function CaptureScreen() {
 
   const handleScan = async (fromCamera: boolean) => {
     if (!hasKey) {
-      Alert.alert(
-        "API key needed",
-        "Add your free Google AI key in Settings to use FridgeChef.",
-        [
-          { text: "Go to Settings", onPress: () => router.push("/settings") },
-          { text: "Cancel", style: "cancel" },
-        ],
-      );
+      // Alert.alert is blocked in browser iframes — navigate directly on web
+      if (Platform.OS === "web") {
+        router.push("/settings");
+      } else {
+        Alert.alert(
+          "API key needed",
+          "Add your free Google AI key in Settings to use FridgeChef.",
+          [
+            { text: "Go to Settings", onPress: () => router.push("/settings") },
+            { text: "Cancel", style: "cancel" },
+          ],
+        );
+      }
       return;
     }
 
@@ -104,26 +109,29 @@ export default function CaptureScreen() {
         typeof e === "object" && e !== null && "response" in e && (e as { response?: { data?: { error?: string } } }).response?.data?.error
           ? (e as { response?: { data?: { error?: string } } }).response!.data!.error!
           : "We couldn't analyze that photo. Please try again.";
-      if (msg.includes("quota")) {
-        Alert.alert(
-          "Daily quota used up",
-          "Your Google AI key hit its free daily limit. It resets every 24 hours, or you can add a different key.",
-          [
-            { text: "Go to Settings", onPress: () => router.push("/settings") },
-            { text: "OK", style: "cancel" },
-          ]
-        );
-      } else if (msg.includes("Invalid API key") || msg.includes("You need a Google AI API key")) {
-        Alert.alert(
-          "API key needed",
-          msg,
-          [
-            { text: "Go to Settings", onPress: () => router.push("/settings") },
-            { text: "Cancel", style: "cancel" },
-          ]
-        );
+      const isKeyError = msg.includes("quota") || msg.includes("Invalid API key") || msg.includes("You need a Google AI API key");
+      if (isKeyError) {
+        // Alert.alert is blocked in browser iframes — navigate directly on web
+        if (Platform.OS === "web") {
+          router.push("/settings");
+        } else {
+          Alert.alert(
+            msg.includes("quota") ? "Daily quota used up" : "API key needed",
+            msg.includes("quota")
+              ? "Your Google AI key hit its free daily limit. It resets every 24 hours, or you can add a different key."
+              : msg,
+            [
+              { text: "Go to Settings", onPress: () => router.push("/settings") },
+              { text: "OK", style: "cancel" },
+            ]
+          );
+        }
       } else {
-        Alert.alert("Scan failed", msg, [{ text: "OK" }]);
+        if (Platform.OS === "web") {
+          console.error("Scan failed:", msg);
+        } else {
+          Alert.alert("Scan failed", msg, [{ text: "OK" }]);
+        }
       }
     }
   };

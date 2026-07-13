@@ -23,13 +23,19 @@ export default function SettingsScreen() {
   const { apiKey, setApiKey, hasKey } = useApiKey();
   const [input, setInput] = useState(apiKey ?? "");
   const [revealed, setRevealed] = useState(false);
+  const [savedMsg, setSavedMsg] = useState<string | null>(null);
 
   const handleSave = () => {
     const trimmed = input.trim();
     setApiKey(trimmed || null);
-    Alert.alert(trimmed ? "API key saved" : "API key removed", trimmed
-      ? "Your key will be used for all AI requests."
-      : "The app will fall back to its default API key if available.");
+    if (Platform.OS === "web") {
+      setSavedMsg(trimmed ? "Key saved!" : "Key removed.");
+      setTimeout(() => setSavedMsg(null), 2500);
+    } else {
+      Alert.alert(trimmed ? "API key saved" : "API key removed", trimmed
+        ? "Your key will be used for all AI requests."
+        : "The app will fall back to its default API key if available.");
+    }
   };
 
   const handleGetKey = () => {
@@ -98,6 +104,13 @@ export default function SettingsScreen() {
             <Feather name="key" size={18} color="#FFFFFF" />
             <Text style={styles.saveButtonText}>Save Key</Text>
           </Pressable>
+
+          {savedMsg ? (
+            <View style={[styles.savedMsg, { backgroundColor: colors.accent }]}>
+              <Feather name="check-circle" size={14} color={colors.success} />
+              <Text style={[styles.savedMsgText, { color: colors.success }]}>{savedMsg}</Text>
+            </View>
+          ) : null}
 
           {hasKey && (
             <Pressable
@@ -199,6 +212,19 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
+    fontFamily: "Inter_600SemiBold",
+  },
+  savedMsg: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignSelf: "center",
+  },
+  savedMsgText: {
+    fontSize: 14,
     fontFamily: "Inter_600SemiBold",
   },
   removeLink: {
