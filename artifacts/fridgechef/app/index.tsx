@@ -45,25 +45,30 @@ export default function CaptureScreen() {
     }
 
     try {
-      const permission = fromCamera
-        ? await ImagePicker.requestCameraPermissionsAsync()
-        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+      // On web, skip the async permission check — it breaks the browser's user-gesture
+      // chain and causes the file picker to be silently blocked. The browser handles
+      // permissions natively when the picker opens.
+      if (Platform.OS !== "web") {
+        const permission = fromCamera
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-      if (!permission.granted) {
-        Alert.alert(
-          "Permission needed",
-          fromCamera
-            ? "Camera access is needed to scan your ingredients. You can enable it in your device Settings."
-            : "Photo library access is needed to pick a photo. You can enable it in your device Settings.",
-          [
-            { text: "Cancel", style: "cancel" },
-            { text: "Open Settings", onPress: () => void Linking.openSettings() },
-          ],
-        );
-        return;
+        if (!permission.granted) {
+          Alert.alert(
+            "Permission needed",
+            fromCamera
+              ? "Camera access is needed to scan your ingredients. You can enable it in your device Settings."
+              : "Photo library access is needed to pick a photo. You can enable it in your device Settings.",
+            [
+              { text: "Cancel", style: "cancel" },
+              { text: "Open Settings", onPress: () => void Linking.openSettings() },
+            ],
+          );
+          return;
+        }
       }
 
-      const result = fromCamera
+      const result = fromCamera && Platform.OS !== "web"
         ? await ImagePicker.launchCameraAsync({
             quality: 0.6,
             base64: true,
