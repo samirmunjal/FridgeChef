@@ -66,7 +66,9 @@ export default function ShoppingListScreen() {
   };
 
   const handleToggle = (key: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     toggleItem(key);
   };
 

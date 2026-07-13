@@ -10,6 +10,7 @@ import { setBaseUrl } from "@workspace/api-client-react";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
+import { Platform, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -20,10 +21,13 @@ import { FavoritesProvider } from "@/context/FavoritesContext";
 import { RecipeFlowProvider } from "@/context/RecipeFlowContext";
 import { ShoppingListProvider } from "@/context/ShoppingListContext";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-setBaseUrl(`https://${process.env["EXPO_PUBLIC_DOMAIN"]}`);
+if (Platform.OS === "web") {
+  setBaseUrl(typeof window !== "undefined" ? window.location.origin : "");
+} else {
+  setBaseUrl(`https://${process.env["EXPO_PUBLIC_DOMAIN"]}`);
+}
 
 const queryClient = new QueryClient();
 
@@ -56,7 +60,7 @@ export default function RootLayout() {
 
   if (!fontsLoaded && !fontError) return null;
 
-  return (
+  const inner = (
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
@@ -77,4 +81,28 @@ export default function RootLayout() {
       </ErrorBoundary>
     </SafeAreaProvider>
   );
+
+  if (Platform.OS === "web") {
+    return (
+      <View style={styles.webRoot}>
+        <View style={styles.webContainer}>{inner}</View>
+      </View>
+    );
+  }
+
+  return inner;
 }
+
+const styles = StyleSheet.create({
+  webRoot: {
+    flex: 1,
+    alignItems: "center",
+    backgroundColor: "#F8F7F4",
+  },
+  webContainer: {
+    flex: 1,
+    width: "100%",
+    maxWidth: 480,
+    overflow: "hidden",
+  },
+});

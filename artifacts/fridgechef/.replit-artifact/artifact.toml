@@ -3,7 +3,6 @@ previewPath = "/"
 title = "FridgeChef"
 version = "1.0.0"
 id = "artifacts/fridgechef"
-router = "expo-domain"
 
 [[integratedSkills]]
 name = "expo"

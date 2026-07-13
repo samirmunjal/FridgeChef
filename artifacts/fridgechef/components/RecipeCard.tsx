@@ -47,7 +47,9 @@ export function RecipeCard({ recipe }: { recipe: Recipe }) {
   };
 
   const handleFavorite = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     toggleFavorite(recipe);
   };
 

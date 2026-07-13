@@ -89,7 +89,9 @@ export default function CaptureScreen() {
         data: { imageBase64: asset.base64, apiKey: apiKey ?? undefined },
       });
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (Platform.OS !== "web") {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
       flow.setIngredients(data.ingredients);
       setScanned(true);
     } catch (e: unknown) {
