@@ -11,7 +11,7 @@ const projectRoot = path.resolve(__dirname, "..");
 
 const result = spawnSync(
   "pnpm",
-  ["exec", "expo", "export", "--platform", "web"],
+  ["exec", "expo", "export", "--platform", "web", "--source-maps"],
   {
     stdio: "inherit",
     cwd: projectRoot,
